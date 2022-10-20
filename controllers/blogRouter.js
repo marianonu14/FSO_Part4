@@ -1,18 +1,22 @@
 const router = require('express').Router();
 const Blog = require('../models/Blog');
 
-router.get('/', (req, res) => {
-  Blog.find({}).then((blogs) => {
-    res.send(blogs);
-  });
+router.get('/', async (req, res) => {
+  const blogs = await Blog.find({});
+  res.send(blogs);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const blog = new Blog(req.body);
 
-  blog.save().then((result) => {
-    response.status(201).send(result);
-  });
+  const { title, author, url, likes } = blog
+
+  if(!title || !author || !url){
+    return res.status(400).send('The infomation is incomplete')
+  }
+
+  const result = await blog.save();
+  res.status(201).send(result);
 });
 
 module.exports = router;

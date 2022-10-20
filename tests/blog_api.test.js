@@ -45,17 +45,53 @@ test('blog are returned as json', async () => {
 });
 
 test('all posts are returned', async () => {
-  const response = await api.get('/api/blog')
+  const response = await api.get('/api/blog');
 
-  expect(response.body).toHaveLength(initialBlog.length)
-})
+  expect(response.body).toHaveLength(initialBlog.length);
+});
 
 test('a specific post is within the returned notes', async () => {
-  const response = await api.get('/api/blog')
+  const response = await api.get('/api/blog');
 
-  const contents = response.body.map(r => r.title)
-  expect(contents).toContain('New Post')
-})
+  const contents = response.body.map((r) => r.title);
+  expect(contents).toContain('New Post');
+});
+
+test('new post', async () => {
+  const post = {
+    title: 'Algo',
+    author: 'Algo',
+    url: 'Algo',
+    likes: 20,
+  };
+
+  await api
+    .post('/api/blog')
+    .send(post)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+    const response = await api.get('/api/blog');
+
+    expect(response.body).toHaveLength(initialBlog.length + 1);
+});
+
+test('new post without title', async () => {
+  const post = {
+    author: 'Algo',
+    url: 'Algo',
+    likes: 20,
+  };
+
+  await api
+    .post('/api/blog')
+    .send(post)
+    .expect(400)
+
+    const response = await api.get('/api/blog');
+
+    expect(response.body).toHaveLength(initialBlog.length);
+});
 
 afterAll(() => {
   mongoose.connection.close();
