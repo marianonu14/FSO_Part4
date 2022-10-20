@@ -15,8 +15,8 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Blog Api');
 });
 
-app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, () => {
   console.log(`Server running on port ${config.PORT}`);
 });
 
-module.exports = app
+module.exports = { app, server }

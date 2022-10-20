@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
-const app = require('../index');
+const { app, server } = require('../index');
 const api = supertest(app);
 const Blog = require('../models/Blog');
 const helper = require('./test_helper');
@@ -158,4 +158,5 @@ describe('HTTP Request DELETE', () => {
 
 afterAll(() => {
   mongoose.connection.close();
+  server.close();
 });
