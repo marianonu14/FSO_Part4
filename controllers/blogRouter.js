@@ -1,32 +1,46 @@
 const router = require('express').Router();
 const Blog = require('../models/Blog');
+const User = require('../models/User');
 
 router.get('/', async (req, res) => {
-  const blogs = await Blog.find({});
+  const blogs = await Blog.find({}).populate('user');
   res.send(blogs);
 });
 
 router.post('/', async (req, res) => {
-  const blog = new Blog(req.body);
+  const { title, author, url, userId } = req.body;
 
-  const { title, author, url } = blog;
+  const user = await User.findById(userId);
 
   if (!title || !author || !url) {
     return res.status(400).send('The infomation is incomplete');
   }
 
-  const result = await blog.save();
-  res.status(201).send(result);
+  const blog = new Blog({
+    title: title,
+    author: author,
+    url: url,
+    user: user._id,
+  });
+
+  const savedBlog = await blog.save();
+
+  user.blog = user.blog.concat(savedBlog._id);
+  await user.save();
+
+  res.status(201).json(savedBlog);
 });
 
 router.put('/:id', async (req, res) => {
-  const blogUpdate = req.body
+  const blogUpdate = req.body;
 
   try {
-    const result = await Blog.findByIdAndUpdate(req.params.id, blogUpdate, { new: true });
+    const result = await Blog.findByIdAndUpdate(req.params.id, blogUpdate, {
+      new: true,
+    });
     res.status(201).send(result);
   } catch (error) {
-    res.status(404).send('Invalid ID')
+    res.status(404).send('Invalid ID');
     console.log(error.message);
   }
 });
