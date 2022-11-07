@@ -5,9 +5,12 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
+    minlength: 5,
   },
   name: String,
-  passwordHash: String,
+  passwordHash: {
+    type: String,
+  },
   blog: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +19,7 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-userSchema.plugin(uniqueValidator)
+userSchema.plugin(uniqueValidator);
 
 userSchema.set('toJSON', {
   transform: (document, returnedObject) => {
