@@ -3,12 +3,23 @@ const jwt = require('jsonwebtoken');
 const Blog = require('../models/Blog');
 const User = require('../models/User');
 
-const getTokenFrom = (req) => {
-  const authorization = request.get('authorization');
+const extractorToken = (req, res, next) => {
+  const authorization = req.get('authorization');
+  let token = '';
+
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7);
+    token = authorization.substring(7);
   }
-  return null;
+
+  const decodedToken = jwt.verify(token, process.env.SECRET);
+
+  if (!token || !decodedToken.id) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
+
+  req.userId = decodedToken.id;
+
+  next();
 };
 
 router.get('/', async (req, res) => {
@@ -16,17 +27,10 @@ router.get('/', async (req, res) => {
   res.send(blogs);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', extractorToken, async (req, res) => {
   const { title, author, url } = req.body;
-  const token = getTokenFrom(req);
 
-  const decodedToken = jwt.verify(token, process.env.SECRET);
-
-  if (!token || !decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' });
-  }
-
-  const user = await User.findById(decodedToken.id);
+  const user = await User.findById(req.userId);
 
   if (!title || !author || !url) {
     return res.status(400).send('The infomation is incomplete');
